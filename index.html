@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<title>Csapatépítő Quiz</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #1b1b1b;
+  color: #fff;
+  text-align: center;
+  padding: 40px;
+}
+
+#quiz-container {
+  max-width: 900px;
+  margin: auto;
+  background: #222;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #000;
+}
+
+h1, h2 {
+  color: #ffcc00;
+}
+
+.question {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.answers button,
+.show-btn {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 15px;
+  font-size: 1.1em;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #444;
+  color: #fff;
+}
+
+.answers button:hover,
+.show-btn:hover {
+  background: #666;
+}
+
+.correct { background-color: #28a745 !important; }
+.wrong { background-color: #dc3545 !important; }
+
+#next-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 1.2em;
+  background: #007bff;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: none;
+}
+
+/* Zászlók */
+.flag-container {
+  margin-bottom: 45px;
+}
+
+.flag-container img {
+  width: 200px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+}
+
+.country-name {
+  margin-top: 10px;
+  font-size: 1.3em;
+  color: #ffcc00;
+  display: none;
+}
+
+/* Kattintott gomb jelzése */
+.clicked {
+  font-weight: bold;
+  background-color: #007bff !important;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="quiz-container">
+  <h1 id="title">🧩 1. feladat – Angol–Amerikai Quiz</h1>
+  <div id="question-container"></div>
+  <button id="next-btn" onclick="nextQuestion()">Következő</button>
+</div>
+
+<script>
+// =======================
+// GLOBÁLIS PONTOZÁS
+// =======================
+let score = 0;
+const QUIZ_POINTS = 5;   // 1. feladat pontértéke
+const FLAG_POINTS = 5;   // 2. feladat pontértéke
+
+
+// =======================
+// 1. FELADAT – KÉRDÉSEK
+// =======================
+const quizData = [
+ {q:"Melyik településen található az Alcatraz?", a:["San Diego","Los Angeles","San Francisco","Egyiken sem"], correct:2},
+ {q:"Mi az Egyesült Királyság zászlajának neve?", a:["Union Jack","Queen’s flag","Diamond of Victoria","Nincs is neve"], correct:0},
+ {q:"Mi az USA hivatalos nyelve?", a:["angol","spanyol","nincs hivatalos nyelve","cherokee"], correct:2},
+ {q:"Hány állama van az USA-nak?", a:["13","48","51","50"], correct:3},
+ {q:"Honnan ered a Halloween?", a:["Anglia","USA","Wales","Írország"], correct:3},
+ {q:"Mikor tartják az USA-ban a hálaadást?", a:["november 27","november 20","november negyedik csütörtökén","november negyedik péntekén"], correct:2},
+ {q:"Mi Wales fővárosa?", a:["Cardiff","Edinburgh","Belfast","London"], correct:0},
+ {q:"Lobog a Union Jack a Buckingham-palota felett, ez mit jelent?", a:[" a UK háborúban áll egy másik országgal","mindig lobog","az uralkodó épp ott tartózkodik","akciós a fish&chips"], correct:2},
+ {q:"Mikor van a Boxing Day?", a:["dec. 24","dec. 25","dec. 26","december negyedik péntekén"], correct:2},
+ {q:"Hogy hívták a hajót, ami elvitte a zarándokokat 1620-ban Bostonba, és szorosan kapcsolódik a Hálaadás ünnepének megszületéséhez?", a:["Mayflower","Lusitania","HMS Victory","Queen Victoria"], correct:0},
+ {q:"Ki alapította az Anglikán egyházat?", a:["III. Edward","IV. Henry","VIII. George","VIII. Henry"], correct:3},
+ {q:"„Oh Captain! My Captain!” melyik könyből/filmből származik ez a híres Walt Whitman idézet?", a:["LOTR","Gone with the Wind","Dead Poets Society","Pride & Prejudice"], correct:2},
+ {q:"Ki volt a leghosszabb ideig Anglia trónján?", a:["Queen Victoria","II. Queen Elizabeth","VIII. Henry","I. Queen Elizabeth"], correct:1},
+ {q:"Ki a Harry Potter könyvek szerzője?", a:["J.R.R. Tolkien","Virginia Woolf","J.K. Rowling","Daniel Radcliffe"], correct:2},
+ {q:"Ki volt a Pulp Fiction című amerikai film rendezője?", a:["Stanley Kubrick","Quentin Tarantino","Martin Scorsese","Francis Ford Coppola"], correct:1}
+];
+
+let currentQuestion = 0;
+
+function showQuestion() {
+  const q = quizData[currentQuestion];
+  document.getElementById("question-container").innerHTML = `
+    <div class="question">${q.q}</div>
+    <div class="answers">
+      ${q.a.map((ans,i)=>`<button onclick="selectAnswer(this,${i})">${ans}</button>`).join("")}
+    </div>`;
+  document.getElementById("next-btn").style.display="none";
+}
+
+function selectAnswer(btn,index){
+  const correct = quizData[currentQuestion].correct;
+  document.querySelectorAll(".answers button").forEach(b=>b.disabled=true);
+
+  if(index===correct){
+    btn.classList.add("correct");
+    score += QUIZ_POINTS;
+  } else {
+    btn.classList.add("wrong");
+    document.querySelectorAll(".answers button")[correct].classList.add("correct");
+  }
+  document.getElementById("next-btn").style.display="inline-block";
+}
+
+function nextQuestion(){
+  currentQuestion++;
+  if(currentQuestion < quizData.length){
+    showQuestion();
+  } else {
+    startFlags();
+  }
+}
+
+// =======================
+// 2. FELADAT – ZÁSZLÓK
+// =======================
+const flags = [
+ {src:"https://flagcdn.com/w320/lr.png", country:"Liberia"},
+ {src:"https://flagcdn.com/w320/ph.png", country:"The Philippines"},
+ {src:"https://flagcdn.com/w320/ca.png", country:"Canada"},
+ {src:"https://flagcdn.com/w320/bs.png", country:"The Bahamas"},
+ {src:"https://flagcdn.com/w320/jm.png", country:"Jamaica"},
+ {src:"https://flagcdn.com/w320/ie.png", country:"The Republic of Ireland"},
+ {src:"https://flagcdn.com/w320/sg.png", country:"Singapore"},
+ {src:"https://flagcdn.com/w320/za.png", country:"South Africa"},
+ {src:"https://flagcdn.com/w320/ng.png", country:"Nigeria"},
+ {src:"https://flagcdn.com/w320/ke.png", country:"Kenya"},
+ {src:"https://flagcdn.com/w320/gb.png", country:"The UK"},
+ {src:"https://flagcdn.com/w320/nz.png", country:"New Zealand"},
+ {src:"https://flagcdn.com/w320/mt.png", country:"Malta"},
+ {src:"https://flagcdn.com/w320/au.png", country:"Australia"}
+];
+
+function startFlags(){
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("title").innerText = "🎌 2. feladat – Zászlók";
+  const c = document.getElementById("question-container");
+  c.innerHTML = "";
+
+  flags.forEach((f,i)=>{
+    c.innerHTML += `
+      <div class="flag-container">
+        <img src="${f.src}"><br>
+
+        <button class="show-btn" onclick="reveal(${i})">
+          Mutasd a választ 👀
+        </button>
+
+        <button class="show-btn" id="know-${i}" onclick="flagAnswer(${i}, true)">
+          Tudtam 😎
+        </button>
+
+        <button class="show-btn" id="learn-${i}" onclick="flagAnswer(${i}, false)">
+          Na most már ezt is tudom 🤓
+        </button>
+
+        <div class="country-name" id="country-${i}">
+          ${f.country}
+        </div>
+      </div>
+    `;
+  });
+
+  c.innerHTML += `<button class="show-btn" onclick="finish()">Végeredmény</button>`;
+}
+
+function reveal(i){
+  document.getElementById("country-"+i).style.display = "block";
+}
+
+function flagAnswer(i, knew){
+  const answer = document.getElementById("country-"+i);
+  if(answer.style.display !== "block") return;
+  if(answer.dataset.done === "yes") return;
+
+  answer.dataset.done = "yes";
+
+  const knowBtn = document.getElementById("know-"+i);
+  const learnBtn = document.getElementById("learn-"+i);
+
+  if(knew){
+    score += FLAG_POINTS;
+    knowBtn.classList.add("clicked");
+    learnBtn.classList.add("disabled");
+  } else {
+    learnBtn.classList.add("clicked");
+    knowBtn.classList.add("disabled");
+  }
+}
+
+// =======================
+// VÉGEREDMÉNY
+// =======================
+function finish(){
+  const max = quizData.length * QUIZ_POINTS + flags.length * FLAG_POINTS;
+  document.getElementById("quiz-container").innerHTML = `
+    <h1>🎉 Végeredmény</h1>
+    <h2>${score} / ${max} pont</h2>
+  `;
+}
+
+// INDÍTÁS
+window.onload = function() {
+showQuestion();
+</script>
+
+</body>
+</html>
